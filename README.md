@@ -1,6 +1,6 @@
 # ADA
 
-ADS 542 Statistical Learning final project.
+ADA 442 Statistical Learning final project.
 
 Includes:
 - project notebook

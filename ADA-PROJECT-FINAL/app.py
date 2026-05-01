@@ -299,4 +299,4 @@ with prediction_tab:
 
 
 st.markdown("---")
-st.caption("ADS 542 Statistical Learning | Final Project | Yankı Ufuk Dülger")
+st.caption("ADA 442 Statistical Learning | Final Project | Yankı Ufuk Dülger")
