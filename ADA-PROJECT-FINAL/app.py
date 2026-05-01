@@ -4,6 +4,11 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "rf_pipeline.sav"
+DATA_PATH = BASE_DIR / "bank-additional" / "bank-additional.csv"
 
 # -----------------------------------------------------------------------------
 # 1. PAGE CONFIG
@@ -18,7 +23,7 @@ st.set_page_config(
 # -----------------------------------------------------------------------------
 @st.cache_resource
 def load_model():
-    with open("rf_pipeline.sav", "rb") as f:
+    with open(MODEL_PATH, "rb") as f:
         return pickle.load(f)
 
 model = load_model()
@@ -28,7 +33,7 @@ model = load_model()
 # -----------------------------------------------------------------------------
 @st.cache_data
 def load_data():
-    return pd.read_csv("bank-additional/bank-additional.csv", sep=";")
+    return pd.read_csv(DATA_PATH, sep=";")
 
 df = load_data()
 
