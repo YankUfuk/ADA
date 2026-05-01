@@ -226,4 +226,4 @@ with tab2:
 # FOOTER
 # -----------------------------------------------------------------------------
 st.markdown("---")
-st.caption("© ADA 442 – Machine Learning Project by Anıl Doni, Emre Beldağ, Volkan Sarı")
+st.caption("ADS 542 Statistical Learning Final Project – Yankı Ufuk Dülger")
