@@ -6,9 +6,9 @@ import seaborn as sns
 from pathlib import Path
 
 # file paths
-BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "rf_pipeline.sav"
-DATA_PATH = BASE_DIR / "bank-additional" / "bank-additional.csv"
+APP_DIR = Path(__file__).resolve().parent
+PIPELINE_FILE = APP_DIR / "rf_pipeline.sav"
+DATA_FILE = APP_DIR / "bank-additional" / "bank-additional.csv"
 
 # app setup
 st.set_page_config(
@@ -44,18 +44,18 @@ st.markdown(
 
 # load model
 @st.cache_resource
-def load_model():
-    with open(MODEL_PATH, "rb") as f:
+def load_pipeline():
+    with open(PIPELINE_FILE, "rb") as f:
         return pickle.load(f)
 
-model = load_model()
+pipeline_model = load_pipeline()
 
 # load dataset
 @st.cache_data
-def load_data():
-    return pd.read_csv(DATA_PATH, sep=";")
+def read_bank_data():
+    return pd.read_csv(DATA_FILE, sep=";")
 
-df = load_data()
+bank_data = read_bank_data()
 
 st.title("Bank Campaign Subscription Predictor")
 st.markdown(
@@ -63,15 +63,15 @@ st.markdown(
     "and estimates whether a customer is likely to subscribe to a term deposit"
 )
 
-tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Customer Prediction"])
+overview_tab, prediction_tab = st.tabs(["Exploratory Data Analysis", "Customer Prediction"])
 
 # eda tab
-with tab1:
+with overview_tab:
     st.header("Exploratory Data Analysis")
 
-    total_records = len(df)
-    subscribed_count = int((df["y"] == "yes").sum())
-    not_subscribed_count = int((df["y"] == "no").sum())
+    total_records = len(bank_data)
+    subscribed_count = int((bank_data["y"] == "yes").sum())
+    not_subscribed_count = int((bank_data["y"] == "no").sum())
 
     metric_col1, metric_col2, metric_col3 = st.columns(3)
     metric_col1.metric("Total Records", total_records)
@@ -79,24 +79,24 @@ with tab1:
     metric_col3.metric("Not Subscribed", not_subscribed_count)
 
     st.subheader("Subscription Outcome Distribution")
-    fig1, ax1 = plt.subplots()
-    df["y"].value_counts().plot(kind="bar", ax=ax1, color=["#2563EB", "#64748B"])
-    ax1.set_xlabel("Subscription")
-    ax1.set_ylabel("Count")
-    ax1.set_title("Target Class Distribution (y)")
-    st.pyplot(fig1)
+    target_fig, target_ax = plt.subplots()
+    bank_data["y"].value_counts().plot(kind="bar", ax=target_ax, color=["#2563EB", "#64748B"])
+    target_ax.set_xlabel("Subscription")
+    target_ax.set_ylabel("Count")
+    target_ax.set_title("Target Class Distribution (y)")
+    st.pyplot(target_fig)
 
     st.markdown("""
 - The dataset is **imbalanced**.
 - This justifies the use of **SMOTE** during training.
 """)
 
-    if "duration" in df.columns:
+    if "duration" in bank_data.columns:
         st.subheader("Call Duration vs Target")
-        fig2, ax2 = plt.subplots()
-        sns.histplot(data=df, x="duration", hue="y", bins=40, ax=ax2)
-        ax2.set_title("Duration vs Subscription Outcome")
-        st.pyplot(fig2)
+        duration_fig, duration_ax = plt.subplots()
+        sns.histplot(data=bank_data, x="duration", hue="y", bins=40, ax=duration_ax)
+        duration_ax.set_title("Duration vs Subscription Outcome")
+        st.pyplot(duration_fig)
 
         st.warning("""
 **Data Leakage Notice**
@@ -106,22 +106,22 @@ It was excluded from model training so the prediction stays realistic.
 """)
 
     st.subheader("Numerical Feature Correlation")
-    num_df = df.select_dtypes(include=["number"])
-    fig3, ax3 = plt.subplots(figsize=(10, 6))
-    sns.heatmap(num_df.corr(), cmap="YlGnBu", ax=ax3)
-    ax3.set_title("Feature Correlation Matrix")
-    st.pyplot(fig3)
+    numeric_data = bank_data.select_dtypes(include=["number"])
+    corr_fig, corr_ax = plt.subplots(figsize=(10, 6))
+    sns.heatmap(numeric_data.corr(), cmap="YlGnBu", ax=corr_ax)
+    corr_ax.set_title("Feature Correlation Matrix")
+    st.pyplot(corr_fig)
 
     st.subheader("Sample Records")
-    st.dataframe(df.head())
+    st.dataframe(bank_data.head())
 
 # prediction tab
-with tab2:
+with prediction_tab:
     st.header("Customer Simulation & Prediction")
 
-    col1, col2, col3 = st.columns(3)
+    customer_col, campaign_col, economic_col = st.columns(3)
 
-    with col1:
+    with customer_col:
         st.subheader("Customer Info")
         age = st.number_input(
             "Age",
@@ -149,7 +149,7 @@ with tab2:
             )
         housing = st.selectbox("Housing Loan", ["yes", "no"])
 
-    with col2:
+    with campaign_col:
         st.subheader("Campaign Info")
         loan = st.selectbox("Personal Loan", ["yes", "no"])
         contact = st.selectbox("Contact Type", ["cellular", "telephone"])
@@ -161,7 +161,7 @@ with tab2:
         emp_var_rate = st.selectbox("Employment Variation Rate",
                                     [-3.4, -2.9, -2.1, -1.8, -1.1, 0.1, 1.1])
 
-    with col3:
+    with economic_col:
         st.subheader("Economic Info")
         cons_price_idx = st.selectbox("Consumer Price Index",
                                       [92.2, 92.8, 93.2, 93.9, 94.4])
@@ -189,7 +189,7 @@ with tab2:
 
 
     # build input row for prediction
-    input_df = pd.DataFrame([{
+    customer_input = pd.DataFrame([{
         "age": age,
         "campaign": campaign,
         "pdays": pdays,
@@ -229,12 +229,12 @@ with tab2:
     st.markdown("---")
 
     if st.button("Predict"):
-        pred = model.predict(input_df)[0]
-        prob = model.predict_proba(input_df)[0][1]
+        prediction = pipeline_model.predict(customer_input)[0]
+        subscription_probability = pipeline_model.predict_proba(customer_input)[0][1]
 
-        st.metric("Estimated Subscription Probability", f"{prob:.2%}")
+        st.metric("Estimated Subscription Probability", f"{subscription_probability:.2%}")
 
-        if pred == 1:
+        if prediction == 1:
             st.success("Prediction Subscribe")
         else:
             st.error("Prediction Not Subscribe")
