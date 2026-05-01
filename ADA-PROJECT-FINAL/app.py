@@ -26,7 +26,10 @@ st.markdown(
     h1, h2, h3 {
         color: #F9FAFB;
     }
-    p, label, span, div {
+    p, li,
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stCaptionContainer"],
+    [data-testid="stWidgetLabel"] {
         color: #E5E7EB;
     }
     div[data-testid="stMetric"] {
@@ -41,13 +44,24 @@ st.markdown(
     div[data-testid="stMetric"] div {
         color: #F9FAFB;
     }
-    div[data-baseweb="select"] div,
+    [data-baseweb="input"] input,
+    [data-baseweb="textarea"] textarea,
+    div[data-baseweb="select"] > div,
     input,
     textarea {
+        background-color: #F9FAFB;
+        color: #111827;
+        border-color: #374151;
+    }
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] input,
+    div[data-baseweb="popover"] li,
+    div[data-baseweb="popover"] div {
         color: #111827;
     }
-    div[data-baseweb="select"] span {
-        color: #111827;
+    div[data-baseweb="popover"] ul,
+    div[data-baseweb="popover"] div[role="listbox"] {
+        background-color: #F9FAFB;
     }
     .stButton > button {
         background-color: #3B82F6;
@@ -102,12 +116,15 @@ with overview_tab:
     st.divider()
 
     st.subheader("Subscription Outcome Distribution")
-    target_fig, target_ax = plt.subplots()
+    target_fig, target_ax = plt.subplots(figsize=(5, 3))
     bank_data["y"].value_counts().plot(kind="bar", ax=target_ax, color=["#2563EB", "#64748B"])
     target_ax.set_xlabel("Subscription")
     target_ax.set_ylabel("Count")
     target_ax.set_title("Target Class Distribution (y)")
-    st.pyplot(target_fig)
+    target_fig.tight_layout()
+    target_left, target_area, target_right = st.columns([1, 2, 1])
+    with target_area:
+        st.pyplot(target_fig, use_container_width=False)
 
     st.markdown("""
 - The dataset is **imbalanced**.
@@ -118,10 +135,13 @@ with overview_tab:
 
     if "duration" in bank_data.columns:
         st.subheader("Call Duration vs Target")
-        duration_fig, duration_ax = plt.subplots()
+        duration_fig, duration_ax = plt.subplots(figsize=(6, 3))
         sns.histplot(data=bank_data, x="duration", hue="y", bins=40, ax=duration_ax)
         duration_ax.set_title("Duration vs Subscription Outcome")
-        st.pyplot(duration_fig)
+        duration_fig.tight_layout()
+        duration_left, duration_area, duration_right = st.columns([1, 2, 1])
+        with duration_area:
+            st.pyplot(duration_fig, use_container_width=False)
 
         st.warning("""
 **Data Leakage Notice**
@@ -134,10 +154,13 @@ It was excluded from model training so the prediction stays realistic.
 
     st.subheader("Numerical Feature Correlation")
     numeric_data = bank_data.select_dtypes(include=["number"])
-    corr_fig, corr_ax = plt.subplots(figsize=(10, 6))
+    corr_fig, corr_ax = plt.subplots(figsize=(7, 4))
     sns.heatmap(numeric_data.corr(), cmap="YlGnBu", ax=corr_ax)
     corr_ax.set_title("Feature Correlation Matrix")
-    st.pyplot(corr_fig)
+    corr_fig.tight_layout()
+    corr_left, corr_area, corr_right = st.columns([1, 3, 1])
+    with corr_area:
+        st.pyplot(corr_fig, use_container_width=False)
 
     st.divider()
 
