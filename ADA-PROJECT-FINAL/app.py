@@ -20,22 +20,43 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: #F7F9FC;
+        background-color: #0B0F19;
+        color: #E5E7EB;
     }
     h1, h2, h3 {
-        color: #1F2937;
+        color: #F9FAFB;
+    }
+    p, label, span, div {
+        color: #E5E7EB;
     }
     div[data-testid="stMetric"] {
-        background-color: #FFFFFF;
-        border-left: 4px solid #2563EB;
+        background-color: #111827;
+        border: 1px solid #1F2937;
+        border-left: 4px solid #3B82F6;
         padding: 0.75rem 1rem;
         border-radius: 0.5rem;
+        color: #F9FAFB;
+    }
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] div {
+        color: #F9FAFB;
+    }
+    div[data-baseweb="select"] div,
+    input,
+    textarea {
+        color: #111827;
+    }
+    div[data-baseweb="select"] span {
+        color: #111827;
     }
     .stButton > button {
-        background-color: #2563EB;
+        background-color: #3B82F6;
         color: #FFFFFF;
         border-radius: 0.4rem;
         border: none;
+    }
+    .stTabs [data-baseweb="tab"] {
+        color: #E5E7EB;
     }
     </style>
     """,
@@ -78,6 +99,8 @@ with overview_tab:
     metric_col2.metric("Subscribed", subscribed_count)
     metric_col3.metric("Not Subscribed", not_subscribed_count)
 
+    st.divider()
+
     st.subheader("Subscription Outcome Distribution")
     target_fig, target_ax = plt.subplots()
     bank_data["y"].value_counts().plot(kind="bar", ax=target_ax, color=["#2563EB", "#64748B"])
@@ -90,6 +113,8 @@ with overview_tab:
 - The dataset is **imbalanced**.
 - This justifies the use of **SMOTE** during training.
 """)
+
+    st.divider()
 
     if "duration" in bank_data.columns:
         st.subheader("Call Duration vs Target")
@@ -105,12 +130,16 @@ with overview_tab:
 It was excluded from model training so the prediction stays realistic.
 """)
 
+    st.divider()
+
     st.subheader("Numerical Feature Correlation")
     numeric_data = bank_data.select_dtypes(include=["number"])
     corr_fig, corr_ax = plt.subplots(figsize=(10, 6))
     sns.heatmap(numeric_data.corr(), cmap="YlGnBu", ax=corr_ax)
     corr_ax.set_title("Feature Correlation Matrix")
     st.pyplot(corr_fig)
+
+    st.divider()
 
     st.subheader("Sample Records")
     st.dataframe(bank_data.head())
@@ -225,9 +254,9 @@ with prediction_tab:
         "economic_stress": int(emp_var_rate < 0)
     }])
 
-    # show prediction result
-    st.markdown("---")
+    st.divider()
 
+    # show prediction result
     if st.button("Predict"):
         prediction = pipeline_model.predict(customer_input)[0]
         subscription_probability = pipeline_model.predict_proba(customer_input)[0][1]
