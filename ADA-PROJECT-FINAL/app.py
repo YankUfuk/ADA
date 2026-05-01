@@ -116,14 +116,14 @@ with overview_tab:
     st.divider()
 
     st.subheader("Subscription Outcome Distribution")
-    target_fig, target_ax = plt.subplots(figsize=(5, 3))
+    target_fig, target_ax = plt.subplots(figsize=(4.8, 2.8))
     bank_data["y"].value_counts().plot(kind="bar", ax=target_ax, color=["#2563EB", "#64748B"])
     target_ax.set_xlabel("Subscription")
     target_ax.set_ylabel("Count")
     target_ax.set_title("Target Class Distribution (y)")
     target_fig.tight_layout()
-    target_left, target_area, target_right = st.columns([1, 2, 1])
-    with target_area:
+    target_col, target_space = st.columns([0.65, 0.35])
+    with target_col:
         st.pyplot(target_fig, use_container_width=False)
 
     st.markdown("""
@@ -135,12 +135,12 @@ with overview_tab:
 
     if "duration" in bank_data.columns:
         st.subheader("Call Duration vs Target")
-        duration_fig, duration_ax = plt.subplots(figsize=(6, 3))
+        duration_fig, duration_ax = plt.subplots(figsize=(5.8, 3))
         sns.histplot(data=bank_data, x="duration", hue="y", bins=40, ax=duration_ax)
         duration_ax.set_title("Duration vs Subscription Outcome")
         duration_fig.tight_layout()
-        duration_left, duration_area, duration_right = st.columns([1, 2, 1])
-        with duration_area:
+        duration_col, duration_space = st.columns([0.65, 0.35])
+        with duration_col:
             st.pyplot(duration_fig, use_container_width=False)
 
         st.warning("""
@@ -154,12 +154,14 @@ It was excluded from model training so the prediction stays realistic.
 
     st.subheader("Numerical Feature Correlation")
     numeric_data = bank_data.select_dtypes(include=["number"])
-    corr_fig, corr_ax = plt.subplots(figsize=(7, 4))
+    corr_fig, corr_ax = plt.subplots(figsize=(6.5, 3.8))
     sns.heatmap(numeric_data.corr(), cmap="YlGnBu", ax=corr_ax)
     corr_ax.set_title("Feature Correlation Matrix")
+    corr_ax.tick_params(axis="x", labelsize=8)
+    corr_ax.tick_params(axis="y", labelsize=8)
     corr_fig.tight_layout()
-    corr_left, corr_area, corr_right = st.columns([1, 3, 1])
-    with corr_area:
+    corr_col, corr_space = st.columns([0.65, 0.35])
+    with corr_col:
         st.pyplot(corr_fig, use_container_width=False)
 
     st.divider()
